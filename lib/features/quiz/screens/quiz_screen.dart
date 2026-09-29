@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../models/question_model.dart';
 
@@ -253,6 +254,8 @@ class _QuizScreenState extends State<QuizScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     InkWell(
                       borderRadius: BorderRadius.circular(18),
@@ -283,22 +286,83 @@ class _QuizScreenState extends State<QuizScreen>
                       ),
                     ),
 
-                    const SizedBox(width: 16),
-
-                    Expanded(
-                      child: Text(
-                        "🧠 Квиз за учење",
-                        style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.w900,
-                          color: _palette.textPrimary,
-                        ),
+                    Semantics(
+                      label: 'Учи и слушај',
+                      excludeSemantics: true,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  _palette.cardGradients[0].colors.first,
+                                  _palette.cardGradients[1].colors.first,
+                                  _palette.cardGradients[2].colors.first,
+                                ],
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: _palette.cardGradients[0].colors.first
+                                      .withValues(alpha: 0.35),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            alignment: Alignment.center,
+                            child: const Icon(
+                              Icons.graphic_eq_rounded,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          ShaderMask(
+                            blendMode: BlendMode.srcIn,
+                            shaderCallback: (bounds) => LinearGradient(
+                              colors: [
+                                _palette.cardGradients[0].colors.first,
+                                _palette.cardGradients[1].colors.first,
+                                _palette.cardGradients[2].colors.first,
+                              ],
+                            ).createShader(bounds),
+                            child: Text(
+                              'Учи и слушај',
+                              style: GoogleFonts.nunitoSans(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: -0.3,
+                                height: 1.0,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
 
-                const SizedBox(height: 30),
+                const SizedBox(height: 20),
+
+                Center(
+                  child: Text(
+                    "🧠 Квиз за учење",
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w900,
+                      color: _palette.textPrimary,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
 
                 Expanded(
                   child: ListView(

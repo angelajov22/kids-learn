@@ -8,14 +8,17 @@ import '../alphabet/screens/alphabet_screen.dart';
 import '../plants/screens/plants_screen.dart';
 import '../quiz/screens/quiz_screen.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen>
+    with TickerProviderStateMixin {
   late AnimationController _titleCtrl;
   late Animation<double> _titleAnim;
   final _vib = VibrationService();
@@ -27,7 +30,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
-    _titleAnim = CurvedAnimation(parent: _titleCtrl, curve: Curves.elasticOut);
+    _titleAnim = CurvedAnimation(
+      parent: _titleCtrl,
+      curve: Curves.elasticOut,
+    );
     _titleCtrl.forward();
   }
 
@@ -47,7 +53,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           position: Tween<Offset>(
             begin: const Offset(1, 0),
             end: Offset.zero,
-          ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+          ).animate(
+            CurvedAnimation(
+              parent: anim,
+              curve: Curves.easeOutCubic,
+            ),
+          ),
           child: child,
         ),
         transitionDuration: const Duration(milliseconds: 300),
@@ -77,20 +88,80 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
+                        Semantics(
+                          label: 'Учи и слушај',
+                          excludeSemantics: true,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 30,
+                                height: 30,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      palette.cardGradients[0].colors.first,
+                                      palette.cardGradients[1].colors.first,
+                                      palette.cardGradients[2].colors.first,
+                                    ],
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: palette.cardGradients[0].colors.first
+                                          .withValues(alpha: 0.35),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                alignment: Alignment.center,
+                                child: const Icon(
+                                  Icons.graphic_eq_rounded,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              ShaderMask(
+                                blendMode: BlendMode.srcIn,
+                                shaderCallback: (bounds) => LinearGradient(
+                                  colors: [
+                                    palette.cardGradients[0].colors.first,
+                                    palette.cardGradients[1].colors.first,
+                                    palette.cardGradients[2].colors.first,
+                                  ],
+                                ).createShader(bounds),
+                                child: Text(
+                                  'Учи и слушај',
+                                  style: GoogleFonts.nunitoSans(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: -0.3,
+                                    height: 1.0,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
                         Image.asset(
                           'assets/images/logo_finki.png',
-                          height: compact ? 32 : 36,
+                          height: compact ? 28 : 32,
                           fit: BoxFit.contain,
                         ),
                       ],
                     ),
                   ),
 
-                  SizedBox(height: compact ? 8 : 12),
-
-                  _buildTitle(
+                  SizedBox(height: compact ? 26 : 36),                  _buildTitle(
                     compact: compact,
                     titleFontSize: titleFontSize,
                     palette: palette,
@@ -151,10 +222,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ],
             ),
             child: const Center(
-              child: Text('🎓', style: TextStyle(fontSize: 48)),
+              child: Text(
+                '🎓',
+                style: TextStyle(fontSize: 48),
+              ),
             ),
           ),
+
           SizedBox(height: compact ? 12 : 16),
+
           Text(
             'Учи со Забава!',
             style: TextStyle(
@@ -164,7 +240,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               letterSpacing: 0.5,
             ),
           ),
+
           const SizedBox(height: 4),
+
           Text(
             'Избери тема за учење',
             style: TextStyle(
@@ -190,9 +268,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         style: OutlinedButton.styleFrom(
           foregroundColor: palette.textPrimary,
           backgroundColor: palette.controlBackground,
-          side: BorderSide(color: palette.border, width: palette.borderWidth),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
-          textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+          side: BorderSide(
+            color: palette.border,
+            width: palette.borderWidth,
+          ),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 11,
+          ),
+          textStyle: const TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w800,
+          ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
@@ -203,6 +290,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   void _showAccessibilitySettings() {
     _vib.lightTap();
+
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -210,6 +298,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       builder: (sheetContext) {
         final settings = AccessibilityScope.of(sheetContext);
         final palette = settings.palette;
+
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
@@ -226,7 +315,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     color: palette.textPrimary,
                   ),
                 ),
+
                 const SizedBox(height: 20),
+
                 Text(
                   'Режим на бои',
                   style: TextStyle(
@@ -235,7 +326,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     color: palette.textPrimary,
                   ),
                 ),
+
                 const SizedBox(height: 8),
+
                 for (final mode in ColorVisionMode.values)
                   _ColorModeOption(
                     mode: mode,
@@ -269,7 +362,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             palette: palette,
             onTap: () => _navigate(const AnimalsScreen()),
           ),
+
           const SizedBox(height: 16),
+
           _buildMenuCard(
             title: 'Бои и Форми',
             subtitle: 'Учи бои!',
@@ -278,7 +373,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             palette: palette,
             onTap: () => _navigate(const ColorsShapesScreen()),
           ),
+
           const SizedBox(height: 16),
+
           _buildMenuCard(
             title: 'Азбука',
             subtitle: 'Научи букви!',
@@ -287,7 +384,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             palette: palette,
             onTap: () => _navigate(const AlphabetScreen()),
           ),
+
           const SizedBox(height: 16),
+
           _buildMenuCard(
             title: 'Овошје и зеленчук',
             subtitle: 'Запознај ги!',
@@ -335,17 +434,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 top: -5,
                 child: Opacity(
                   opacity: 0.2,
-                  child: const Text('🧠', style: TextStyle(fontSize: 80)),
+                  child: const Text(
+                    '🧠',
+                    style: TextStyle(fontSize: 80),
+                  ),
                 ),
               ),
+
               Positioned.fill(
                 right: 46,
                 child: Center(
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text('🧠', style: TextStyle(fontSize: 30)),
+                      const Text(
+                        '🧠',
+                        style: TextStyle(fontSize: 30),
+                      ),
+
                       const SizedBox(width: 12),
+
                       Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -357,6 +465,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               color: palette.onCard,
                             ),
                           ),
+
                           Text(
                             'Тестирај ги знаењата!',
                             style: TextStyle(
@@ -392,7 +501,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         tween: Tween(begin: 0.85, end: 1.0),
         duration: const Duration(milliseconds: 600),
         curve: Curves.elasticOut,
-        builder: (_, v, child) => Transform.scale(scale: v, child: child),
+        builder: (_, v, child) =>
+            Transform.scale(scale: v, child: child),
+
         child: Container(
           constraints: const BoxConstraints(minHeight: 112),
           decoration: BoxDecoration(
@@ -417,9 +528,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 bottom: -18,
                 child: Opacity(
                   opacity: 0.25,
-                  child: Text(emoji, style: const TextStyle(fontSize: 96)),
+                  child: Text(
+                    emoji,
+                    style: const TextStyle(fontSize: 96),
+                  ),
                 ),
               ),
+
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 22,
@@ -435,9 +550,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       alignment: Alignment.center,
-                      child: Text(emoji, style: const TextStyle(fontSize: 42)),
+                      child: Text(
+                        emoji,
+                        style: const TextStyle(fontSize: 42),
+                      ),
                     ),
+
                     const SizedBox(width: 20),
+
                     Expanded(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -454,7 +574,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               color: palette.onCard,
                             ),
                           ),
+
                           const SizedBox(height: 6),
+
                           Text(
                             subtitle,
                             maxLines: 1,
@@ -510,6 +632,7 @@ class _ColorModeOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final status = selected ? 'избрано' : 'не е избрано';
+
     return Semantics(
       button: true,
       selected: selected,
@@ -522,34 +645,50 @@ class _ColorModeOption extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 180),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 12,
+            ),
             decoration: BoxDecoration(
               color: selected
                   ? palette.selectedBackground
                   : palette.controlBackground,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: selected ? palette.selected : palette.border,
-                width: selected ? palette.borderWidth + 1 : palette.borderWidth,
+                color: selected
+                    ? palette.selected
+                    : palette.border,
+                width: selected
+                    ? palette.borderWidth + 1
+                    : palette.borderWidth,
               ),
             ),
             child: Row(
               children: [
                 Icon(
-                  selected ? Icons.check_circle : Icons.circle_outlined,
-                  color: selected ? palette.selected : palette.textSecondary,
+                  selected
+                      ? Icons.check_circle
+                      : Icons.circle_outlined,
+                  color: selected
+                      ? palette.selected
+                      : palette.textSecondary,
                 ),
+
                 const SizedBox(width: 12),
+
                 Expanded(
                   child: Text(
                     mode.label,
                     style: TextStyle(
                       fontSize: 17,
-                      fontWeight: selected ? FontWeight.w900 : FontWeight.w600,
+                      fontWeight: selected
+                          ? FontWeight.w900
+                          : FontWeight.w600,
                       color: palette.textPrimary,
                     ),
                   ),
                 ),
+
                 if (selected)
                   Text(
                     'Избрано',

@@ -8,6 +8,7 @@ import '../../../core/services/vibration_service.dart';
 import '../../../core/constants/dimensions.dart';
 import '../../../core/constants/typography.dart';
 import '../../../core/accessibility/accessibility_settings.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class PlantsScreen extends StatefulWidget {
   const PlantsScreen({super.key});
@@ -378,9 +379,11 @@ class _PlantsScreenState extends State<PlantsScreen> {
                 },
               );
             },
+
           ),
         ),
       ],
     );
+
   }
 }
