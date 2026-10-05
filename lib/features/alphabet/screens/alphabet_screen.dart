@@ -39,7 +39,9 @@ class _AlphabetScreenState extends State<AlphabetScreen> {
   }
 
   Future<void> _toggleMute() async {
-    setState(() => _isMuted = !_isMuted);
+    setState(() {
+      _isMuted = !_isMuted;
+    });
 
     if (_isMuted) {
       await _audio.stop();
@@ -59,32 +61,70 @@ class _AlphabetScreenState extends State<AlphabetScreen> {
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final isPhone = constraints.maxWidth < 600;
+                final width = constraints.maxWidth;
+
+                final isPhone = width < 600;
+                final isIPadMini = width >= 600 && width < 800;
+                final isTablet = width >= 800 && width < 1200;
+
+                final maxColumns = isPhone
+                    ? 2
+                    : isIPadMini
+                    ? 4
+                    : isTablet
+                    ? 4
+                    : 5;
+
+                final minimumCardWidth = isPhone
+                    ? 125.0
+                    : isIPadMini
+                    ? 140.0
+                    : isTablet
+                    ? 150.0
+                    : 165.0;
+
+                final horizontalPadding = isPhone
+                    ? 16.0
+                    : isIPadMini
+                    ? 24.0
+                    : isTablet
+                    ? 32.0
+                    : 60.0;
+
+                final spacing = isPhone
+                    ? 12.0
+                    : isIPadMini
+                    ? 14.0
+                    : isTablet
+                    ? 16.0
+                    : 18.0;
+
+                final cardAspectRatio = isPhone
+                    ? 0.72
+                    : isIPadMini
+                    ? 0.68
+                    : isTablet
+                    ? 0.76
+                    : 0.84;
 
                 return GridView.builder(
                   padding: EdgeInsets.fromLTRB(
-                    isPhone ? 20 : 70,
-                    isPhone ? 10 : 18,
-                    isPhone ? 20 : 70,
-                    isPhone ? 20 : 28,
+                    horizontalPadding,
+                    isPhone ? 10.0 : 18.0,
+                    horizontalPadding,
+                    isPhone ? 20.0 : 28.0,
                   ),
                   gridDelegate:
                   SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount:
                     AppDimensions.responsiveColumnCount(
-                      availableWidth: constraints.maxWidth,
-                      minimumCardWidth:
-                      isPhone
-                          ? AppDimensions.alphabetCardMinWidth
-                          : 150,
-                      maxColumns: 5,
+                      availableWidth: width,
+                      minimumCardWidth: minimumCardWidth,
+                      maxColumns: maxColumns,
                     ),
-                    crossAxisSpacing:
-                    isPhone ? 16 : 18,
-                    mainAxisSpacing:
-                    isPhone ? 16 : 18,
-                    childAspectRatio:
-                    isPhone ? 0.70 : 0.82,
+                    crossAxisSpacing: spacing,
+                    mainAxisSpacing: spacing,
+                    childAspectRatio: cardAspectRatio,
                   ),
                   itemCount: AlphabetData.letters.length,
                   itemBuilder: (_, i) {
@@ -151,15 +191,12 @@ class _AlphabetScreenState extends State<AlphabetScreen> {
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                  CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     AnimatedDefaultTextStyle(
-                      duration:
-                      const Duration(milliseconds: 250),
+                      duration: const Duration(milliseconds: 250),
                       style: TextStyle(
-                        fontSize:
-                        _isBannerExpanded ? 24 : 20,
+                        fontSize: _isBannerExpanded ? 24 : 20,
                         fontWeight: FontWeight.w800,
                         color: palette.onCard,
                       ),
@@ -169,11 +206,9 @@ class _AlphabetScreenState extends State<AlphabetScreen> {
                     ),
                     const SizedBox(height: 6),
                     AnimatedDefaultTextStyle(
-                      duration:
-                      const Duration(milliseconds: 250),
+                      duration: const Duration(milliseconds: 250),
                       style: TextStyle(
-                        fontSize:
-                        _isBannerExpanded ? 18 : 15,
+                        fontSize: _isBannerExpanded ? 18 : 15,
                         color: palette.onCardSecondary,
                         height: 1.4,
                       ),
@@ -185,11 +220,9 @@ class _AlphabetScreenState extends State<AlphabetScreen> {
               Column(
                 children: [
                   AnimatedDefaultTextStyle(
-                    duration:
-                    const Duration(milliseconds: 250),
+                    duration: const Duration(milliseconds: 250),
                     style: TextStyle(
-                      fontSize:
-                      _isBannerExpanded ? 46 : 36,
+                      fontSize: _isBannerExpanded ? 46 : 36,
                     ),
                     child: Text(letter.emoji),
                   ),
@@ -205,10 +238,9 @@ class _AlphabetScreenState extends State<AlphabetScreen> {
                 child: ElevatedButton.icon(
                   onPressed: _isMuted
                       ? null
-                      : () =>
-                      _audio.playAsset(
-                        letter.audioPath,
-                      ),
+                      : () => _audio.playAsset(
+                    letter.audioPath,
+                  ),
                   icon: const Icon(
                     Icons.volume_up_rounded,
                   ),
@@ -222,18 +254,14 @@ class _AlphabetScreenState extends State<AlphabetScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: palette.primary,
-                    disabledBackgroundColor:
-                    Colors.white70,
-                    disabledForegroundColor:
-                    Colors.grey,
+                    disabledBackgroundColor: Colors.white70,
+                    disabledForegroundColor: Colors.grey,
                     elevation: 0,
-                    padding:
-                    const EdgeInsets.symmetric(
+                    padding: const EdgeInsets.symmetric(
                       vertical: 13,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius:
-                      BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                   ),
                 ),
@@ -250,8 +278,7 @@ class _AlphabetScreenState extends State<AlphabetScreen> {
                   padding: EdgeInsets.zero,
                   onPressed: () {
                     setState(() {
-                      _isBannerExpanded =
-                      !_isBannerExpanded;
+                      _isBannerExpanded = !_isBannerExpanded;
                     });
                   },
                   icon: Icon(
