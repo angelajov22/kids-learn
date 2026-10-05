@@ -8,7 +8,6 @@ import '../../../core/services/vibration_service.dart';
 import '../../../core/constants/dimensions.dart';
 import '../../../core/constants/typography.dart';
 import '../../../core/accessibility/accessibility_settings.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class PlantsScreen extends StatefulWidget {
   const PlantsScreen({super.key});
@@ -30,7 +29,10 @@ class _PlantsScreenState extends State<PlantsScreen> {
   final _categories = ['сите', 'овошје', 'зеленчук'];
 
   List<PlantModel> get _filtered {
-    if (_selectedCategory == 'сите') return PlantsData.plants;
+    if (_selectedCategory == 'сите') {
+      return PlantsData.plants;
+    }
+
     return PlantsData.plants
         .where((p) => p.category == _selectedCategory)
         .toList();
@@ -43,12 +45,11 @@ class _PlantsScreenState extends State<PlantsScreen> {
     });
 
     _vib.success();
+
     if (!_isMuted) {
       await _audio.playAsset(plant.audioPath);
     }
   }
-
-
 
   Future<void> _toggleMute() async {
     setState(() => _isMuted = !_isMuted);
@@ -89,10 +90,10 @@ class _PlantsScreenState extends State<PlantsScreen> {
       child: Column(
         children: [
           _buildFilter(),
-
           if (_selected != null) _buildBanner(),
-
-          Expanded(child: _buildGrid()),
+          Expanded(
+            child: _buildGrid(),
+          ),
         ],
       ),
     );
@@ -134,7 +135,9 @@ class _PlantsScreenState extends State<PlantsScreen> {
                       : palette.controlBackground,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                    color: active ? palette.selected : palette.border,
+                    color: active
+                        ? palette.selected
+                        : palette.border,
                     width: active
                         ? palette.borderWidth + 1
                         : palette.borderWidth,
@@ -184,7 +187,10 @@ class _PlantsScreenState extends State<PlantsScreen> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       margin: const EdgeInsets.fromLTRB(16, 6, 16, 10),
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 18,
+        vertical: 14,
+      ),
       decoration: BoxDecoration(
         gradient: palette.plantsGradient,
         borderRadius: BorderRadius.circular(28),
@@ -218,9 +224,7 @@ class _PlantsScreenState extends State<PlantsScreen> {
               ),
             ),
           ),
-
           const SizedBox(height: 6),
-
           Text(
             plant.name,
             textAlign: TextAlign.center,
@@ -230,9 +234,7 @@ class _PlantsScreenState extends State<PlantsScreen> {
               color: Colors.white,
             ),
           ),
-
           const SizedBox(height: 4),
-
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Text(
@@ -246,15 +248,18 @@ class _PlantsScreenState extends State<PlantsScreen> {
               ),
             ),
           ),
-
           const SizedBox(height: 12),
-
           Row(
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: _isMuted ? null : () => _audio.playAsset(plant.audioPath),
-                  icon: const Icon(Icons.volume_up_rounded),
+                  onPressed: _isMuted
+                      ? null
+                      : () =>
+                      _audio.playAsset(plant.audioPath),
+                  icon: const Icon(
+                    Icons.volume_up_rounded,
+                  ),
                   label: const Text(
                     'Слушни',
                     style: TextStyle(
@@ -268,16 +273,16 @@ class _PlantsScreenState extends State<PlantsScreen> {
                     disabledBackgroundColor: Colors.white70,
                     disabledForegroundColor: Colors.grey,
                     elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
                 ),
               ),
-
               const SizedBox(width: 8),
-
               Container(
                 width: 44,
                 height: 44,
@@ -296,9 +301,7 @@ class _PlantsScreenState extends State<PlantsScreen> {
                   ),
                 ),
               ),
-
               const SizedBox(width: 8),
-
               Container(
                 width: 44,
                 height: 44,
@@ -309,7 +312,8 @@ class _PlantsScreenState extends State<PlantsScreen> {
                 child: IconButton(
                   onPressed: () {
                     setState(() {
-                      _isBannerExpanded = !_isBannerExpanded;
+                      _isBannerExpanded =
+                      !_isBannerExpanded;
                     });
                   },
                   icon: Icon(
@@ -334,7 +338,12 @@ class _PlantsScreenState extends State<PlantsScreen> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 10),
+          padding: const EdgeInsets.fromLTRB(
+            20,
+            4,
+            20,
+            10,
+          ),
           child: Row(
             children: [
               Icon(
@@ -354,36 +363,46 @@ class _PlantsScreenState extends State<PlantsScreen> {
             ],
           ),
         ),
-
         Expanded(
           child: LayoutBuilder(
             builder: (context, constraints) {
+              final isPhone = constraints.maxWidth < 600;
+
               return GridView.builder(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: AppDimensions.responsiveColumnCount(
+                padding: EdgeInsets.fromLTRB(
+                  isPhone ? 20 : 70,
+                  isPhone ? 10 : 18,
+                  isPhone ? 20 : 70,
+                  isPhone ? 20 : 28,
+                ),
+                gridDelegate:
+                SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount:
+                  AppDimensions.responsiveColumnCount(
                     availableWidth: constraints.maxWidth,
-                    minimumCardWidth: AppDimensions.learningCardMinWidth,
+                    minimumCardWidth: isPhone
+                        ? AppDimensions.learningCardMinWidth
+                        : 190,
                   ),
-                  crossAxisSpacing: AppDimensions.learningGridSpacing,
-                  mainAxisSpacing: AppDimensions.learningGridSpacing,
-                  childAspectRatio: 0.82,
+                  crossAxisSpacing: isPhone ? 16 : 18,
+                  mainAxisSpacing: isPhone ? 16 : 18,
+                  childAspectRatio: isPhone ? 0.82 : 1.05,
                 ),
                 itemCount: _filtered.length,
                 itemBuilder: (_, index) {
+                  final plant = _filtered[index];
+
                   return PlantCard(
-                    plant: _filtered[index],
+                    plant: plant,
                     index: index,
-                    onTap: () => _onTap(_filtered[index]),
+                    onTap: () => _onTap(plant),
                   );
                 },
               );
             },
-
           ),
         ),
       ],
     );
-
   }
 }

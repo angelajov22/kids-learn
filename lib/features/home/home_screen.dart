@@ -21,19 +21,25 @@ class _HomeScreenState extends State<HomeScreen>
     with TickerProviderStateMixin {
   late AnimationController _titleCtrl;
   late Animation<double> _titleAnim;
+
   final _vib = VibrationService();
+  String? _hoveredCard;
+  bool _quizHovered = false;
 
   @override
   void initState() {
     super.initState();
+
     _titleCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
+
     _titleAnim = CurvedAnimation(
       parent: _titleCtrl,
       curve: Curves.elasticOut,
     );
+
     _titleCtrl.forward();
   }
 
@@ -45,22 +51,25 @@ class _HomeScreenState extends State<HomeScreen>
 
   void _navigate(Widget screen) {
     _vib.lightTap();
+
     Navigator.push(
       context,
       PageRouteBuilder(
         pageBuilder: (_, anim, __) => screen,
-        transitionsBuilder: (_, anim, __, child) => SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(1, 0),
-            end: Offset.zero,
-          ).animate(
-            CurvedAnimation(
-              parent: anim,
-              curve: Curves.easeOutCubic,
+        transitionsBuilder: (_, anim, __, child) {
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(1, 0),
+              end: Offset.zero,
+            ).animate(
+              CurvedAnimation(
+                parent: anim,
+                curve: Curves.easeOutCubic,
+              ),
             ),
-          ),
-          child: child,
-        ),
+            child: child,
+          );
+        },
         transitionDuration: const Duration(milliseconds: 300),
       ),
     );
@@ -78,10 +87,17 @@ class _HomeScreenState extends State<HomeScreen>
         child: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final compact = constraints.maxHeight < 700;
               final width = constraints.maxWidth;
-              final titleFontSize =
-              (width * 0.082).clamp(30.0, 34.0);
+              final height = constraints.maxHeight;
+
+              final isPhone = width < 600;
+              final compact = height < 700;
+
+              final isTablet = width >= 600 && (width < 1000 || height > width);
+
+              final titleFontSize = isTablet
+                  ? (width * 0.04).clamp(34.0, 46.0)
+                  : (width * 0.082).clamp(30.0, 34.0);
 
               return Column(
                 children: [
@@ -114,7 +130,8 @@ class _HomeScreenState extends State<HomeScreen>
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: palette.cardGradients[0].colors.first
+                                      color: palette
+                                          .cardGradients[0].colors.first
                                           .withValues(alpha: 0.35),
                                       blurRadius: 8,
                                       offset: const Offset(0, 3),
@@ -141,7 +158,7 @@ class _HomeScreenState extends State<HomeScreen>
                                 child: Text(
                                   'Учи и слушај',
                                   style: GoogleFonts.nunitoSans(
-                                    fontSize: 20,
+                                    fontSize: isPhone ? 20 : 24,
                                     fontWeight: FontWeight.w900,
                                     letterSpacing: -0.3,
                                     height: 1.0,
@@ -151,44 +168,96 @@ class _HomeScreenState extends State<HomeScreen>
                             ],
                           ),
                         ),
-
                         Image.asset(
                           'assets/images/logo_finki.png',
-                          height: compact ? 28 : 32,
+                          height: isPhone ? 28 : 38,
                           fit: BoxFit.contain,
                         ),
                       ],
                     ),
                   ),
-
-                  SizedBox(height: compact ? 26 : 36),                  _buildTitle(
+                  SizedBox(
+                    height: isPhone
+                        ? 26
+                        : compact
+                        ? 14
+                        : 24,
+                  ),
+                  _buildTitle(
                     compact: compact,
                     titleFontSize: titleFontSize,
                     palette: palette,
                   ),
-
-                  SizedBox(height: compact ? 8 : 12),
-
+                  SizedBox(height: isPhone ? 8 : 6),
                   _buildAccessibilityButton(palette),
-
-                  SizedBox(height: compact ? 8 : 12),
-
-                  Expanded(
-                    child: _buildTopicList(palette),
-                  ),
-
-                  SizedBox(height: compact ? 12 : 16),
-
-                  _buildQuizButton(
-                    compact: compact,
-                    palette: palette,
-                  ),
-
-                  SizedBox(height: compact ? 10 : 12),
-
-                  _buildFooter(palette),
-
-                  SizedBox(height: compact ? 12 : 16),
+                  SizedBox(height: isPhone ? 10 : 18),
+                  if (isPhone)
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: SingleChildScrollView(
+                              physics: const BouncingScrollPhysics(),
+                              padding: const EdgeInsets.only(
+                                top: 2,
+                                bottom: 12,
+                              ),
+                              child: _buildPhoneTopics(palette),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          _buildQuizButton(
+                            compact: false,
+                            palette: palette,
+                          ),
+                          const SizedBox(height: 8),
+                          _buildFooter(palette),
+                          const SizedBox(height: 10),
+                        ],
+                      ),
+                    )
+                  else if (isTablet)
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: _buildTabletTopics(palette),
+                          ),
+                          const SizedBox(height: 12),
+                          Center(
+                            child: ConstrainedBox(
+                              constraints:
+                              const BoxConstraints(maxWidth: 560),
+                              child: _buildQuizButton(
+                                compact: compact,
+                                palette: palette,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          _buildFooter(palette),
+                          const SizedBox(height: 5),
+                        ],
+                      ),
+                    )
+                  else
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: _buildDesktopTopics(palette),
+                          ),
+                          const SizedBox(height: 8),
+                          _buildQuizButton(
+                            compact: true,
+                            palette: palette,
+                          ),
+                          const SizedBox(height: 5),
+                          _buildFooter(palette),
+                          const SizedBox(height: 5),
+                        ],
+                      ),
+                    ),
                 ],
               );
             },
@@ -228,11 +297,10 @@ class _HomeScreenState extends State<HomeScreen>
               ),
             ),
           ),
-
           SizedBox(height: compact ? 12 : 16),
-
           Text(
             'Учи со Забава!',
+            textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: titleFontSize,
               fontWeight: FontWeight.w900,
@@ -240,11 +308,10 @@ class _HomeScreenState extends State<HomeScreen>
               letterSpacing: 0.5,
             ),
           ),
-
           const SizedBox(height: 4),
-
           Text(
             'Избери тема за учење',
+            textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 19,
               fontWeight: FontWeight.w600,
@@ -315,9 +382,7 @@ class _HomeScreenState extends State<HomeScreen>
                     color: palette.textPrimary,
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
                 Text(
                   'Режим на бои',
                   style: TextStyle(
@@ -326,9 +391,7 @@ class _HomeScreenState extends State<HomeScreen>
                     color: palette.textPrimary,
                   ),
                 ),
-
                 const SizedBox(height: 8),
-
                 for (final mode in ColorVisionMode.values)
                   _ColorModeOption(
                     mode: mode,
@@ -347,12 +410,10 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Widget _buildTopicList(AccessiblePalette palette) {
+  Widget _buildPhoneTopics(AccessiblePalette palette) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 2),
-        physics: const BouncingScrollPhysics(),
+      child: Column(
         children: [
           _buildMenuCard(
             title: 'Животни',
@@ -360,43 +421,203 @@ class _HomeScreenState extends State<HomeScreen>
             emoji: '🐾',
             gradient: palette.cardGradients[0],
             palette: palette,
+            height: 130,
             onTap: () => _navigate(const AnimalsScreen()),
           ),
-
           const SizedBox(height: 16),
-
           _buildMenuCard(
             title: 'Бои и Форми',
             subtitle: 'Учи бои!',
             emoji: '🎨',
             gradient: palette.cardGradients[1],
             palette: palette,
+            height: 130,
             onTap: () => _navigate(const ColorsShapesScreen()),
           ),
-
           const SizedBox(height: 16),
-
           _buildMenuCard(
             title: 'Азбука',
             subtitle: 'Научи букви!',
             emoji: '🔤',
             gradient: palette.cardGradients[2],
             palette: palette,
+            height: 130,
             onTap: () => _navigate(const AlphabetScreen()),
           ),
-
           const SizedBox(height: 16),
-
           _buildMenuCard(
             title: 'Овошје и зеленчук',
             subtitle: 'Запознај ги!',
             emoji: '🍓',
             gradient: palette.cardGradients[3],
             palette: palette,
+            height: 130,
             onTap: () => _navigate(const PlantsScreen()),
           ),
+          const SizedBox(height: 10),
         ],
       ),
+    );
+  }
+
+  Widget _buildDesktopTopics(AccessiblePalette palette) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableWidth =
+        constraints.maxWidth > 1100 ? 1100.0 : constraints.maxWidth;
+
+        final cardWidth = (availableWidth - 18) / 2;
+
+        return Center(
+          child: SizedBox(
+            width: availableWidth,
+            child: Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 18,
+              runSpacing: 10,
+              children: [
+                SizedBox(
+                  width: cardWidth,
+                  child: _buildMenuCard(
+                    title: 'Животни',
+                    subtitle: 'Запознај ги!',
+                    emoji: '🐾',
+                    gradient: palette.cardGradients[0],
+                    palette: palette,
+                    height: 125,
+                    onTap: () => _navigate(const AnimalsScreen()),
+                  ),
+                ),
+                SizedBox(
+                  width: cardWidth,
+                  child: _buildMenuCard(
+                    title: 'Бои и Форми',
+                    subtitle: 'Учи бои!',
+                    emoji: '🎨',
+                    gradient: palette.cardGradients[1],
+                    palette: palette,
+                    height: 125,
+                    onTap: () => _navigate(const ColorsShapesScreen()),
+                  ),
+                ),
+                SizedBox(
+                  width: cardWidth,
+                  child: _buildMenuCard(
+                    title: 'Азбука',
+                    subtitle: 'Научи букви!',
+                    emoji: '🔤',
+                    gradient: palette.cardGradients[2],
+                    palette: palette,
+                    height: 125,
+                    onTap: () => _navigate(const AlphabetScreen()),
+                  ),
+                ),
+                SizedBox(
+                  width: cardWidth,
+                  child: _buildMenuCard(
+                    title: 'Овошје и зеленчук',
+                    subtitle: 'Запознај ги!',
+                    emoji: '🍓',
+                    gradient: palette.cardGradients[3],
+                    palette: palette,
+                    height: 125,
+                    onTap: () => _navigate(const PlantsScreen()),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTabletTopics(AccessiblePalette palette) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const spacing = 18.0;
+
+        final availableWidth =
+        (constraints.maxWidth - 56).clamp(280.0, 1100.0).toDouble();
+        final cardWidth = (availableWidth - spacing) / 2;
+        final cardHeight =
+        ((constraints.maxHeight - spacing - 42) / 2)
+            .clamp(125.0, 210.0)
+            .toDouble();
+
+        final heightScale = (cardHeight / 145).clamp(0.9, 1.3).toDouble();
+        final widthScale = (cardWidth / 340).clamp(0.85, 1.3).toDouble();
+        final scale = heightScale < widthScale ? heightScale : widthScale;
+
+        return Center(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.all(10),
+            child: SizedBox(
+              width: availableWidth,
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: spacing,
+                runSpacing: spacing,
+                children: [
+                  SizedBox(
+                    width: cardWidth,
+                    child: _buildMenuCard(
+                      title: 'Животни',
+                      subtitle: 'Запознај ги!',
+                      emoji: '🐾',
+                      gradient: palette.cardGradients[0],
+                      palette: palette,
+                      height: cardHeight,
+                      scale: scale,
+                      onTap: () => _navigate(const AnimalsScreen()),
+                    ),
+                  ),
+                  SizedBox(
+                    width: cardWidth,
+                    child: _buildMenuCard(
+                      title: 'Бои и Форми',
+                      subtitle: 'Учи бои!',
+                      emoji: '🎨',
+                      gradient: palette.cardGradients[1],
+                      palette: palette,
+                      height: cardHeight,
+                      scale: scale,
+                      onTap: () => _navigate(const ColorsShapesScreen()),
+                    ),
+                  ),
+                  SizedBox(
+                    width: cardWidth,
+                    child: _buildMenuCard(
+                      title: 'Азбука',
+                      subtitle: 'Научи букви!',
+                      emoji: '🔤',
+                      gradient: palette.cardGradients[2],
+                      palette: palette,
+                      height: cardHeight,
+                      scale: scale,
+                      onTap: () => _navigate(const AlphabetScreen()),
+                    ),
+                  ),
+                  SizedBox(
+                    width: cardWidth,
+                    child: _buildMenuCard(
+                      title: 'Овошје и зеленчук',
+                      subtitle: 'Запознај ги!',
+                      emoji: '🍓',
+                      gradient: palette.cardGradients[3],
+                      palette: palette,
+                      height: cardHeight,
+                      scale: scale,
+                      onTap: () => _navigate(const PlantsScreen()),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -404,83 +625,104 @@ class _HomeScreenState extends State<HomeScreen>
     required bool compact,
     required AccessiblePalette palette,
   }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      width: double.infinity,
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) {
+        if (!mounted) return;
+        setState(() {
+          _quizHovered = true;
+        });
+      },
+      onExit: (_) {
+        if (!mounted) return;
+        setState(() {
+          _quizHovered = false;
+        });
+      },
       child: GestureDetector(
-        onTap: () => _navigate(const QuizScreen()),
-        child: Container(
-          width: double.infinity,
-          height: compact ? 68 : 74,
-          decoration: BoxDecoration(
-            gradient: palette.quizGradient,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: palette.border,
-              width: palette.borderWidth,
+        onTap: () {
+          _navigate(const QuizScreen());
+        },
+        child: AnimatedScale(
+          scale: _quizHovered ? 1.035 : 1.0,
+          duration: const Duration(milliseconds: 160),
+          curve: Curves.easeOut,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOut,
+            margin: const EdgeInsets.symmetric(horizontal: 20),
+            width: compact ? 360 : double.infinity,
+            height: compact ? 62 : 74,
+            decoration: BoxDecoration(
+              gradient: palette.quizGradient,
+              borderRadius: BorderRadius.circular(compact ? 20 : 24),
+              border: Border.all(
+                color: palette.border,
+                width: palette.borderWidth,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: palette.quizGradient.colors.first.withValues(
+                    alpha: _quizHovered ? 0.65 : 0.4,
+                  ),
+                  blurRadius: _quizHovered ? 24 : 16,
+                  spreadRadius: _quizHovered ? 2 : 0,
+                  offset: Offset(0, _quizHovered ? 8 : 6),
+                ),
+              ],
             ),
-            boxShadow: [
-              BoxShadow(
-                color: palette.primary.withValues(alpha: 0.4),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: Stack(
-            children: [
-              Positioned(
-                right: 10,
-                top: -5,
-                child: Opacity(
-                  opacity: 0.2,
-                  child: const Text(
-                    '🧠',
-                    style: TextStyle(fontSize: 80),
+            child: Stack(
+              children: [
+                Positioned(
+                  right: 10,
+                  top: -5,
+                  child: Opacity(
+                    opacity: 0.2,
+                    child: Text(
+                      '🧠',
+                      style: TextStyle(fontSize: compact ? 65 : 80),
+                    ),
                   ),
                 ),
-              ),
-
-              Positioned.fill(
-                right: 46,
-                child: Center(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        '🧠',
-                        style: TextStyle(fontSize: 30),
-                      ),
-
-                      const SizedBox(width: 12),
-
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Квиз',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w900,
-                              color: palette.onCard,
+                Positioned.fill(
+                  right: compact ? 30 : 46,
+                  child: Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '🧠',
+                          style: TextStyle(fontSize: compact ? 22 : 30),
+                        ),
+                        SizedBox(width: compact ? 8 : 12),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Квиз',
+                              style: TextStyle(
+                                fontSize: compact ? 18 : 24,
+                                fontWeight: FontWeight.w900,
+                                color: palette.onCard,
+                              ),
                             ),
-                          ),
-
-                          Text(
-                            'Тестирај ги знаењата!',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: palette.onCardSecondary,
+                            Text(
+                              'Тестирај ги знаењата!',
+                              style: TextStyle(
+                                fontSize: compact ? 12 : 16,
+                                fontWeight: FontWeight.w500,
+                                color: palette.onCardSecondary,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -494,106 +736,145 @@ class _HomeScreenState extends State<HomeScreen>
     required LinearGradient gradient,
     required AccessiblePalette palette,
     required VoidCallback onTap,
+    double height = 145,
+    double scale = 1.0,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: TweenAnimationBuilder<double>(
-        tween: Tween(begin: 0.85, end: 1.0),
-        duration: const Duration(milliseconds: 600),
-        curve: Curves.elasticOut,
-        builder: (_, v, child) =>
-            Transform.scale(scale: v, child: child),
+    final isHovered = _hoveredCard == title;
 
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 112),
-          decoration: BoxDecoration(
-            gradient: gradient,
-            borderRadius: BorderRadius.circular(26),
-            border: Border.all(
-              color: palette.border,
-              width: palette.borderWidth,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: gradient.colors.first.withValues(alpha: 0.4),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) {
+        if (!mounted) return;
+        setState(() {
+          _hoveredCard = title;
+        });
+      },
+      onExit: (_) {
+        if (!mounted) return;
+        setState(() {
+          if (_hoveredCard == title) {
+            _hoveredCard = null;
+          }
+        });
+      },
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedScale(
+          scale: isHovered ? 1.025 : 1.0,
+          duration: const Duration(milliseconds: 160),
+          curve: Curves.easeOut,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOut,
+            height: height,
+            decoration: BoxDecoration(
+              gradient: gradient,
+              borderRadius: BorderRadius.circular(26),
+              border: Border.all(
+                color: palette.border,
+                width: palette.borderWidth,
               ),
-            ],
-          ),
-          child: Stack(
-            children: [
-              Positioned(
-                right: 4,
-                bottom: -18,
-                child: Opacity(
-                  opacity: 0.25,
-                  child: Text(
-                    emoji,
-                    style: const TextStyle(fontSize: 96),
+              boxShadow: [
+                BoxShadow(
+                  color: gradient.colors.first.withValues(
+                    alpha: isHovered ? 0.55 : 0.4,
                   ),
+                  blurRadius: isHovered ? 24 : 16,
+                  spreadRadius: isHovered ? 2 : 0,
+                  offset: Offset(0, isHovered ? 8 : 6),
                 ),
-              ),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 22,
-                  vertical: 20,
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 68,
-                      height: 68,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      alignment: Alignment.center,
+              ],
+            ),
+            child: Stack(
+              children: [
+                Positioned(
+                  right: 4,
+                  bottom: -18 * scale,
+                  child: AnimatedScale(
+                    scale: isHovered ? 1.08 : 1.0,
+                    duration: const Duration(milliseconds: 180),
+                    child: AnimatedOpacity(
+                      opacity: isHovered ? 0.34 : 0.25,
+                      duration: const Duration(milliseconds: 180),
                       child: Text(
                         emoji,
-                        style: const TextStyle(fontSize: 42),
+                        style: TextStyle(
+                          fontSize: (height >= 130 ? 86 : 70) * scale,
+                        ),
                       ),
                     ),
-
-                    const SizedBox(width: 20),
-
-                    Expanded(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 23,
-                              height: 1.1,
-                              fontWeight: FontWeight.w900,
-                              color: palette.onCard,
-                            ),
-                          ),
-
-                          const SizedBox(height: 6),
-
-                          Text(
-                            subtitle,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: palette.onCardSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 22 * scale,
+                    vertical: 14,
+                  ),
+                  child: Row(
+                    children: [
+                      AnimatedScale(
+                        scale: isHovered ? 1.08 : 1.0,
+                        duration: const Duration(milliseconds: 180),
+                        child: Container(
+                          width: 68 * scale,
+                          height: 68 * scale,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            emoji,
+                            style: TextStyle(fontSize: 42 * scale),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 20 * scale),
+                      Expanded(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              title,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 23 * scale,
+                                height: 1.1,
+                                fontWeight: FontWeight.w900,
+                                color: palette.onCard,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              subtitle,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 16 * scale,
+                                fontWeight: FontWeight.w600,
+                                color: palette.onCardSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      AnimatedOpacity(
+                        opacity: isHovered ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 180),
+                        child: Icon(
+                          Icons.arrow_forward_rounded,
+                          color: Colors.white,
+                          size: 28 * scale,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -602,7 +883,10 @@ class _HomeScreenState extends State<HomeScreen>
 
   Widget _buildFooter(AccessiblePalette palette) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 25,
+        vertical: 8,
+      ),
       child: Text(
         '🌟 Учи, Играј, Расти! 🌟',
         textAlign: TextAlign.center,
@@ -655,9 +939,7 @@ class _ColorModeOption extends StatelessWidget {
                   : palette.controlBackground,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: selected
-                    ? palette.selected
-                    : palette.border,
+                color: selected ? palette.selected : palette.border,
                 width: selected
                     ? palette.borderWidth + 1
                     : palette.borderWidth,
@@ -666,29 +948,21 @@ class _ColorModeOption extends StatelessWidget {
             child: Row(
               children: [
                 Icon(
-                  selected
-                      ? Icons.check_circle
-                      : Icons.circle_outlined,
-                  color: selected
-                      ? palette.selected
-                      : palette.textSecondary,
+                  selected ? Icons.check_circle : Icons.circle_outlined,
+                  color: selected ? palette.selected : palette.textSecondary,
                 ),
-
                 const SizedBox(width: 12),
-
                 Expanded(
                   child: Text(
                     mode.label,
                     style: TextStyle(
                       fontSize: 17,
-                      fontWeight: selected
-                          ? FontWeight.w900
-                          : FontWeight.w600,
+                      fontWeight:
+                      selected ? FontWeight.w900 : FontWeight.w600,
                       color: palette.textPrimary,
                     ),
                   ),
                 ),
-
                 if (selected)
                   Text(
                     'Избрано',

@@ -149,35 +149,63 @@ class _AnimalsScreenState extends State<AnimalsScreen> {
 
   Widget _buildAnimalsGrid() {
     final animals = _filteredAnimals;
+
     return LayoutBuilder(
-      builder: (context, constraints) => GridView.builder(
-        padding: const EdgeInsets.all(AppDimensions.learningGridPadding),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: AppDimensions.responsiveColumnCount(
-            availableWidth: constraints.maxWidth,
-            minimumCardWidth: AppDimensions.learningCardMinWidth,
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+
+        // Mobile: 2 cards
+        // Tablet: 3 cards
+        // Desktop: 4 cards
+        final int columns;
+
+        if (width < 600) {
+          columns = 2;
+        } else if (width < 1000) {
+          columns = 3;
+        } else {
+          columns = 4;
+        }
+
+        return Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxWidth: 1250,
+            ),
+            child: GridView.builder(
+              padding: EdgeInsets.symmetric(
+                horizontal: width >= 1000 ? 32 : 16,
+                vertical: 20,
+              ),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: columns,
+                crossAxisSpacing: width >= 1000 ? 20 : 14,
+                mainAxisSpacing: width >= 1000 ? 20 : 14,
+                childAspectRatio: 0.82,
+              ),
+              itemCount: animals.length,
+              itemBuilder: (context, index) {
+                final animal = animals[index];
+
+                return AnimalCard(
+                  animal: animal,
+                  index: index,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => AnimalDetailScreen(
+                          animal: animal,
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
           ),
-          crossAxisSpacing: AppDimensions.learningGridSpacing,
-          mainAxisSpacing: AppDimensions.learningGridSpacing,
-          childAspectRatio: 0.82,
-        ),
-        itemCount: animals.length,
-        itemBuilder: (context, index) {
-          final animal = animals[index];
-          return AnimalCard(
-            animal: animal,
-            index: index,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => AnimalDetailScreen(animal: animal),
-                ),
-              );
-            },
-          );
-        },
-      ),
+        );
+      },
     );
   }
 }

@@ -19,38 +19,13 @@ class AnimalCard extends StatefulWidget {
   State<AnimalCard> createState() => _AnimalCardState();
 }
 
-class _AnimalCardState extends State<AnimalCard>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnim;
+class _AnimalCardState extends State<AnimalCard> {
   final _vibration = VibrationService();
 
-  @override
-  void initState() {
-    super.initState();
+  bool _isHovering = false;
+  bool _isPressed = false;
 
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 120),
-    );
-
-    _scaleAnim = Tween<double>(
-      begin: 1.0,
-      end: 0.97,
-    ).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  Future<void> _handleTap() async {
-    await _controller.forward();
-    await _controller.reverse();
+  void _handleTap() {
     _vibration.lightTap();
     widget.onTap();
   }
@@ -61,97 +36,183 @@ class _AnimalCardState extends State<AnimalCard>
     final cardColor = palette.itemAccent(widget.index);
     final lightColor = palette.tintedSurface(cardColor);
 
-    return GestureDetector(
-      onTap: _handleTap,
-      child: ScaleTransition(
-        scale: _scaleAnim,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-          decoration: BoxDecoration(
-            color: lightColor,
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(
-              color: palette.border,
-              width: palette.borderWidth,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: cardColor.withValues(alpha: 0.15),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final cardWidth = constraints.maxWidth;
 
-          child: Column(
-            children: [
-              Container(
-                width: 82,
-                height: 82,
+        final imageSize = cardWidth >= 250
+            ? 90.0
+            : cardWidth >= 180
+            ? 78.0
+            : 70.0;
+
+        final animalImageSize = cardWidth >= 250
+            ? 60.0
+            : cardWidth >= 180
+            ? 54.0
+            : 48.0;
+
+        final titleSize = cardWidth >= 250
+            ? 22.0
+            : cardWidth >= 180
+            ? 20.0
+            : 17.0;
+
+        final soundSize = cardWidth >= 250
+            ? 17.0
+            : cardWidth >= 180
+            ? 16.0
+            : 14.0;
+
+        final scale = _isPressed
+            ? 0.97
+            : _isHovering
+            ? 1.025
+            : 1.0;
+
+        return MouseRegion(
+          cursor: SystemMouseCursors.click,
+          onEnter: (_) {
+            if (!mounted) return;
+            setState(() {
+              _isHovering = true;
+            });
+          },
+          onExit: (_) {
+            if (!mounted) return;
+            setState(() {
+              _isHovering = false;
+            });
+          },
+          child: GestureDetector(
+            onTapDown: (_) {
+              if (!mounted) return;
+              setState(() {
+                _isPressed = true;
+              });
+            },
+            onTapUp: (_) {
+              if (!mounted) return;
+              setState(() {
+                _isPressed = false;
+              });
+              _handleTap();
+            },
+            onTapCancel: () {
+              if (!mounted) return;
+              setState(() {
+                _isPressed = false;
+              });
+            },
+            child: AnimatedScale(
+              scale: scale,
+              duration: const Duration(milliseconds: 160),
+              curve: Curves.easeOut,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOut,
+                padding: EdgeInsets.symmetric(
+                  horizontal: cardWidth >= 250 ? 16 : 10,
+                  vertical: cardWidth >= 250 ? 16 : 12,
+                ),
                 decoration: BoxDecoration(
-                  color: palette.controlBackground,
-                  shape: BoxShape.circle,
+                  color: lightColor,
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(
+                    color: palette.border,
+                    width: palette.borderWidth,
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: cardColor.withValues(alpha: 0.18),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
+                      color: cardColor.withValues(
+                        alpha: _isHovering ? 0.25 : 0.15,
+                      ),
+                      blurRadius: _isHovering ? 16 : 10,
+                      spreadRadius: _isHovering ? 1 : 0,
+                      offset: Offset(
+                        0,
+                        _isHovering ? 7 : 4,
+                      ),
                     ),
                   ],
                 ),
-                child: Center(
-                  child: Image.asset(
-                    widget.animal.imagePath,
-                    width: 54,
-                    height: 54,
-                    fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) => Text(
-                      widget.animal.emoji,
-                      style: const TextStyle(fontSize: 46),
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 10),
-
-              Expanded(
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 2),
-                    child: Text(
-                      widget.animal.name,
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w800,
-                        height: 1.15,
-                        color: palette.textPrimary,
+                child: Column(
+                  children: [
+                    AnimatedScale(
+                      scale: _isHovering ? 1.02 : 1.0,
+                      duration: const Duration(milliseconds: 180),
+                      curve: Curves.easeOut,
+                      child: Container(
+                        width: imageSize,
+                        height: imageSize,
+                        decoration: BoxDecoration(
+                          color: palette.controlBackground,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: cardColor.withValues(
+                                alpha: _isHovering ? 0.25 : 0.18,
+                              ),
+                              blurRadius: _isHovering ? 14 : 10,
+                              offset: Offset(
+                                0,
+                                _isHovering ? 5 : 3,
+                              ),
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Image.asset(
+                            widget.animal.imagePath,
+                            width: animalImageSize,
+                            height: animalImageSize,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => Text(
+                              widget.animal.emoji,
+                              style: TextStyle(
+                                fontSize: animalImageSize * 0.8,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 10),
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          widget.animal.name,
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: titleSize,
+                            fontWeight: FontWeight.w800,
+                            height: 1.15,
+                            color: palette.textPrimary,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      widget.animal.sound,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: soundSize,
+                        fontWeight: FontWeight.w700,
+                        color: palette.textSecondary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-
-              const SizedBox(height: 6),
-
-              Text(
-                widget.animal.sound,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: palette.textSecondary,
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

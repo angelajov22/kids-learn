@@ -21,34 +21,13 @@ class LetterCard extends StatefulWidget {
   State<LetterCard> createState() => _LetterCardState();
 }
 
-class _LetterCardState extends State<LetterCard>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-  late Animation<double> _scale;
+class _LetterCardState extends State<LetterCard> {
   final _vib = VibrationService();
 
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 120),
-    );
-    _scale = Tween<double>(
-      begin: 1.0,
-      end: 0.90,
-    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
-  }
+  bool _isHovering = false;
+  bool _isPressed = false;
 
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  void _tap() async {
-    await _ctrl.forward();
-    await _ctrl.reverse();
+  void _tap() {
     _vib.lightTap();
     widget.onTap();
   }
@@ -58,62 +37,124 @@ class _LetterCardState extends State<LetterCard>
     final palette = AccessibilityScope.of(context).palette;
     final color = palette.itemAccent(widget.index);
     final light = palette.tintedSurface(color, 0.88);
-    return GestureDetector(
-      onTap: _tap,
-      child: ScaleTransition(
-        scale: _scale,
-        child: Container(
-          padding: const EdgeInsets.all(AppDimensions.cardPadding),
-          decoration: BoxDecoration(
-            color: light,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: palette.border,
-              width: palette.borderWidth,
+
+    final scale = _isPressed
+        ? 0.97
+        : _isHovering
+        ? 1.025
+        : 1.0;
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) {
+        if (!mounted) return;
+        setState(() {
+          _isHovering = true;
+        });
+      },
+      onExit: (_) {
+        if (!mounted) return;
+        setState(() {
+          _isHovering = false;
+        });
+      },
+      child: GestureDetector(
+        onTapDown: (_) {
+          if (!mounted) return;
+          setState(() {
+            _isPressed = true;
+          });
+        },
+        onTapUp: (_) {
+          if (!mounted) return;
+          setState(() {
+            _isPressed = false;
+          });
+          _tap();
+        },
+        onTapCancel: () {
+          if (!mounted) return;
+          setState(() {
+            _isPressed = false;
+          });
+        },
+        child: AnimatedScale(
+          scale: scale,
+          duration: const Duration(milliseconds: 160),
+          curve: Curves.easeOut,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOut,
+            padding: const EdgeInsets.all(
+              AppDimensions.cardPadding,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: color.withValues(alpha: 0.12),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
+            decoration: BoxDecoration(
+              color: light,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: palette.border,
+                width: palette.borderWidth,
               ),
-            ],
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                widget.letter.letter,
-                style: TextStyle(
-                  fontSize: 42,
-                  fontWeight: FontWeight.w900,
-                  color: palette.textPrimary,
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(
+                    alpha: _isHovering ? 0.20 : 0.12,
+                  ),
+                  blurRadius: _isHovering ? 14 : 8,
+                  spreadRadius: _isHovering ? 1 : 0,
+                  offset: Offset(
+                    0,
+                    _isHovering ? 6 : 3,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                widget.letter.letterLower,
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: palette.textSecondary,
+              ],
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                AnimatedScale(
+                  scale: _isHovering ? 1.02 : 1.0,
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOut,
+                  child: Text(
+                    widget.letter.letter,
+                    style: TextStyle(
+                      fontSize: 42,
+                      fontWeight: FontWeight.w900,
+                      color: palette.textPrimary,
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(widget.letter.emoji, style: const TextStyle(fontSize: 34)),
-              const SizedBox(height: 4),
-              Text(
-                widget.letter.word,
-                style: TextStyle(
-                  fontSize: AppTypeScale.interactive,
-                  fontWeight: FontWeight.w700,
-                  color: palette.textPrimary,
+                const SizedBox(height: 4),
+                Text(
+                  widget.letter.letterLower,
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    color: palette.textSecondary,
+                  ),
                 ),
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  widget.letter.emoji,
+                  style: const TextStyle(
+                    fontSize: 34,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  widget.letter.word,
+                  style: TextStyle(
+                    fontSize: AppTypeScale.interactive,
+                    fontWeight: FontWeight.w700,
+                    color: palette.textPrimary,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
         ),
       ),

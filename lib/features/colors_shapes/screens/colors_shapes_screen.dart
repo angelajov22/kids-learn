@@ -26,7 +26,6 @@ class _ColorsShapesScreenState extends State<ColorsShapesScreen> {
   ColorShapeModel? _selected;
 
   bool _isBannerExpanded = false;
-
   bool _isMuted = false;
 
   List<ColorShapeModel> get _items =>
@@ -59,7 +58,6 @@ class _ColorsShapesScreenState extends State<ColorsShapesScreen> {
 
   Future<void> _toggleMute() async {
     setState(() => _isMuted = !_isMuted);
-
     await _audioPlayer.setVolume(_isMuted ? 0 : 1);
   }
 
@@ -76,24 +74,33 @@ class _ColorsShapesScreenState extends State<ColorsShapesScreen> {
     return PageScaffold(
       title: '🎨 Бои и Форми',
       gradientColors: palette.colorsShapesGradient.colors,
-      child: Column(
-        children: [
-          _buildTabs(),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isPhone = constraints.maxWidth < 600;
 
-          if (_selected != null) _buildSelectedBanner(),
-
-          Expanded(child: _buildGrid()),
-        ],
+          return Column(
+            children: [
+              _buildTabs(isPhone),
+              if (_selected != null) _buildSelectedBanner(isPhone),
+              Expanded(
+                child: _buildGrid(isPhone),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildTabs() {
+  Widget _buildTabs(bool isPhone) {
     final palette = AccessibilityScope.of(context).palette;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      padding: const EdgeInsets.all(4),
+      margin: EdgeInsets.symmetric(
+        horizontal: isPhone ? 20 : 60,
+        vertical: isPhone ? 16 : 10,
+      ),
+      padding: EdgeInsets.all(isPhone ? 4 : 3),
       decoration: BoxDecoration(
         color: palette.controlBackground,
         borderRadius: BorderRadius.circular(16),
@@ -110,14 +117,18 @@ class _ColorsShapesScreenState extends State<ColorsShapesScreen> {
       ),
       child: Row(
         children: [
-          _tabBtn('colors', '🎨 Бои'),
-          _tabBtn('shapes', '🔷 Форми'),
+          _tabBtn('colors', '🎨 Бои', isPhone),
+          _tabBtn('shapes', '🔷 Форми', isPhone),
         ],
       ),
     );
   }
 
-  Widget _tabBtn(String key, String label) {
+  Widget _tabBtn(
+      String key,
+      String label,
+      bool isPhone,
+      ) {
     final active = _tab == key;
     final palette = AccessibilityScope.of(context).palette;
 
@@ -132,9 +143,13 @@ class _ColorsShapesScreenState extends State<ColorsShapesScreen> {
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          padding: EdgeInsets.symmetric(
+            vertical: isPhone ? 12 : 9,
+          ),
           decoration: BoxDecoration(
-            color: active ? palette.selected : Colors.transparent,
+            color: active
+                ? palette.selected
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
             border: active
                 ? Border.all(
@@ -147,9 +162,13 @@ class _ColorsShapesScreenState extends State<ColorsShapesScreen> {
             label,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: AppTypeScale.interactive,
+              fontSize: isPhone
+                  ? AppTypeScale.interactive
+                  : 15,
               fontWeight: FontWeight.w700,
-              color: active ? palette.onCard : palette.textSecondary,
+              color: active
+                  ? palette.onCard
+                  : palette.textSecondary,
             ),
           ),
         ),
@@ -157,16 +176,25 @@ class _ColorsShapesScreenState extends State<ColorsShapesScreen> {
     );
   }
 
-  Widget _buildSelectedBanner() {
+  Widget _buildSelectedBanner(bool isPhone) {
     final item = _selected!;
     final palette = AccessibilityScope.of(context).palette;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
-      margin: const EdgeInsets.fromLTRB(16, 4, 16, 10),
+      margin: EdgeInsets.fromLTRB(
+        isPhone ? 16 : 50,
+        4,
+        isPhone ? 16 : 50,
+        10,
+      ),
       padding: EdgeInsets.symmetric(
-        horizontal: _isBannerExpanded ? 20 : 16,
-        vertical: _isBannerExpanded ? 18 : 12,
+        horizontal: isPhone
+            ? (_isBannerExpanded ? 20 : 16)
+            : (_isBannerExpanded ? 16 : 14),
+        vertical: isPhone
+            ? (_isBannerExpanded ? 18 : 12)
+            : (_isBannerExpanded ? 14 : 10),
       ),
       decoration: BoxDecoration(
         color: palette.selectedBackground,
@@ -184,8 +212,12 @@ class _ColorsShapesScreenState extends State<ColorsShapesScreen> {
               if (item.type == ItemType.color)
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  width: _isBannerExpanded ? 64 : 48,
-                  height: _isBannerExpanded ? 64 : 48,
+                  width: _isBannerExpanded
+                      ? (isPhone ? 64 : 56)
+                      : (isPhone ? 48 : 42),
+                  height: _isBannerExpanded
+                      ? (isPhone ? 64 : 56)
+                      : (isPhone ? 48 : 42),
                   decoration: BoxDecoration(
                     color: item.displayColor,
                     shape: BoxShape.circle,
@@ -197,8 +229,12 @@ class _ColorsShapesScreenState extends State<ColorsShapesScreen> {
                   item.id == 'hexagon')
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  width: _isBannerExpanded ? 64 : 48,
-                  height: _isBannerExpanded ? 64 : 48,
+                  width: _isBannerExpanded
+                      ? (isPhone ? 64 : 56)
+                      : (isPhone ? 48 : 42),
+                  height: _isBannerExpanded
+                      ? (isPhone ? 64 : 56)
+                      : (isPhone ? 48 : 42),
                   child: Image.asset(
                     item.imagePath,
                     fit: BoxFit.contain,
@@ -208,13 +244,13 @@ class _ColorsShapesScreenState extends State<ColorsShapesScreen> {
                 AnimatedDefaultTextStyle(
                   duration: const Duration(milliseconds: 200),
                   style: TextStyle(
-                    fontSize: _isBannerExpanded ? 54 : 40,
+                    fontSize: _isBannerExpanded
+                        ? (isPhone ? 54 : 46)
+                        : (isPhone ? 40 : 34),
                   ),
                   child: Text(item.emoji),
                 ),
-
-              const SizedBox(width: 14),
-
+              SizedBox(width: isPhone ? 14 : 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -222,64 +258,81 @@ class _ColorsShapesScreenState extends State<ColorsShapesScreen> {
                     AnimatedDefaultTextStyle(
                       duration: const Duration(milliseconds: 200),
                       style: TextStyle(
-                        fontSize: _isBannerExpanded ? 28 : 22,
+                        fontSize: _isBannerExpanded
+                            ? (isPhone ? 28 : 24)
+                            : (isPhone ? 22 : 19),
                         fontWeight: FontWeight.w800,
                         color: palette.textPrimary,
                       ),
-                      child: Text(item.name),
+                      child: Text(
+                        item.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     AnimatedDefaultTextStyle(
                       duration: const Duration(milliseconds: 200),
                       style: TextStyle(
-                        fontSize: _isBannerExpanded ? 18 : 15,
+                        fontSize: _isBannerExpanded
+                            ? (isPhone ? 18 : 16)
+                            : (isPhone ? 15 : 13),
                         color: palette.textSecondary,
                         height: 1.35,
                       ),
-                      child: Text(item.description),
+                      child: Text(
+                        item.description,
+                        maxLines: isPhone ? 3 : 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),
               ),
-
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: palette.selected.withOpacity(0.12),
-                  shape: BoxShape.circle,
-                ),
-                child: IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _isBannerExpanded = !_isBannerExpanded;
-                    });
-                  },
-                  icon: Icon(
-                    _isBannerExpanded
-                        ? Icons.zoom_out_rounded
-                        : Icons.zoom_in_rounded,
-                    color: palette.selected,
-                    size: 24,
+              SizedBox(
+                width: isPhone ? 44 : 38,
+                height: isPhone ? 44 : 38,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: palette.selected.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () {
+                      setState(() {
+                        _isBannerExpanded =
+                        !_isBannerExpanded;
+                      });
+                    },
+                    icon: Icon(
+                      _isBannerExpanded
+                          ? Icons.zoom_out_rounded
+                          : Icons.zoom_in_rounded,
+                      color: palette.selected,
+                      size: isPhone ? 24 : 20,
+                    ),
                   ),
                 ),
               ),
             ],
           ),
-
-          const SizedBox(height: 16),
-
+          SizedBox(height: isPhone ? 16 : 10),
           Row(
             children: [
               if (item.audioPath.isNotEmpty)
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: _isMuted ? null : () => _playAudio(item),
-                    icon: const Icon(Icons.volume_up_rounded),
-                    label: const Text(
+                    onPressed:
+                    _isMuted ? null : () => _playAudio(item),
+                    icon: Icon(
+                      Icons.volume_up_rounded,
+                      size: isPhone ? 22 : 18,
+                    ),
+                    label: Text(
                       'Слушни повторно',
                       style: TextStyle(
-                        fontSize: 17,
+                        fontSize: isPhone ? 17 : 14,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -289,19 +342,22 @@ class _ColorsShapesScreenState extends State<ColorsShapesScreen> {
                       disabledBackgroundColor: Colors.white70,
                       disabledForegroundColor: Colors.grey,
                       elevation: 0,
-                      minimumSize: const Size.fromHeight(56),
+                      minimumSize: Size.fromHeight(
+                        isPhone ? 56 : 44,
+                      ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(
+                          isPhone ? 16 : 12,
+                        ),
                       ),
                     ),
                   ),
                 ),
-
-              if (item.audioPath.isNotEmpty) const SizedBox(width: 10),
-
+              if (item.audioPath.isNotEmpty)
+                SizedBox(width: isPhone ? 10 : 8),
               Container(
-                width: 46,
-                height: 46,
+                width: isPhone ? 46 : 40,
+                height: isPhone ? 46 : 40,
                 decoration: BoxDecoration(
                   color: palette.selected.withOpacity(0.12),
                   shape: BoxShape.circle,
@@ -314,7 +370,7 @@ class _ColorsShapesScreenState extends State<ColorsShapesScreen> {
                         ? Icons.notifications_off_rounded
                         : Icons.notifications_active_rounded,
                     color: palette.selected,
-                    size: 22,
+                    size: isPhone ? 22 : 19,
                   ),
                 ),
               ),
@@ -325,24 +381,26 @@ class _ColorsShapesScreenState extends State<ColorsShapesScreen> {
     );
   }
 
-  Widget _buildGrid() {
+  Widget _buildGrid(bool isPhone) {
     return LayoutBuilder(
       builder: (context, constraints) {
         return GridView.builder(
-          padding: const EdgeInsets.fromLTRB(
-            AppDimensions.learningGridPadding,
-            0,
-            AppDimensions.learningGridPadding,
-            AppDimensions.learningGridPadding,
+          padding: EdgeInsets.fromLTRB(
+            isPhone ? 20 : 70,
+            isPhone ? 8 : 12,
+            isPhone ? 20 : 70,
+            isPhone ? 20 : 24,
           ),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: AppDimensions.responsiveColumnCount(
+          gridDelegate:
+          SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount:
+            AppDimensions.responsiveColumnCount(
               availableWidth: constraints.maxWidth,
-              minimumCardWidth: AppDimensions.learningCardMinWidth,
+              minimumCardWidth: isPhone ? 220 : 190,
             ),
-            crossAxisSpacing: AppDimensions.learningGridSpacing,
-            mainAxisSpacing: AppDimensions.learningGridSpacing,
-            childAspectRatio: 0.88,
+            crossAxisSpacing: isPhone ? 16 : 18,
+            mainAxisSpacing: isPhone ? 16 : 18,
+            childAspectRatio: isPhone ? 0.88 : 1.12,
           ),
           itemCount: _items.length,
           itemBuilder: (_, i) {

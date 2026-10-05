@@ -58,28 +58,46 @@ class _AlphabetScreenState extends State<AlphabetScreen> {
           if (_selected != null) _buildBanner(),
           Expanded(
             child: LayoutBuilder(
-              builder: (context, constraints) => GridView.builder(
-                padding: const EdgeInsets.all(AppDimensions.learningGridPadding),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: AppDimensions.responsiveColumnCount(
-                    availableWidth: constraints.maxWidth,
-                    minimumCardWidth: AppDimensions.alphabetCardMinWidth,
-                    maxColumns: 5,
+              builder: (context, constraints) {
+                final isPhone = constraints.maxWidth < 600;
+
+                return GridView.builder(
+                  padding: EdgeInsets.fromLTRB(
+                    isPhone ? 20 : 70,
+                    isPhone ? 10 : 18,
+                    isPhone ? 20 : 70,
+                    isPhone ? 20 : 28,
                   ),
-                  crossAxisSpacing: AppDimensions.learningGridSpacing,
-                  mainAxisSpacing: AppDimensions.learningGridSpacing,
-                  childAspectRatio: 0.70,
-                ),
-                itemCount: AlphabetData.letters.length,
-                itemBuilder: (_, i) {
-                  final letter = AlphabetData.letters[i];
-                  return LetterCard(
-                    letter: letter,
-                    index: i,
-                    onTap: () => _onTap(letter),
-                  );
-                },
-              ),
+                  gridDelegate:
+                  SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount:
+                    AppDimensions.responsiveColumnCount(
+                      availableWidth: constraints.maxWidth,
+                      minimumCardWidth:
+                      isPhone
+                          ? AppDimensions.alphabetCardMinWidth
+                          : 150,
+                      maxColumns: 5,
+                    ),
+                    crossAxisSpacing:
+                    isPhone ? 16 : 18,
+                    mainAxisSpacing:
+                    isPhone ? 16 : 18,
+                    childAspectRatio:
+                    isPhone ? 0.70 : 0.82,
+                  ),
+                  itemCount: AlphabetData.letters.length,
+                  itemBuilder: (_, i) {
+                    final letter = AlphabetData.letters[i];
+
+                    return LetterCard(
+                      letter: letter,
+                      index: i,
+                      onTap: () => _onTap(letter),
+                    );
+                  },
+                );
+              },
             ),
           ),
         ],
@@ -130,17 +148,18 @@ class _AlphabetScreenState extends State<AlphabetScreen> {
                   ),
                 ),
               ),
-
               const SizedBox(width: 14),
-
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment:
+                  CrossAxisAlignment.start,
                   children: [
                     AnimatedDefaultTextStyle(
-                      duration: const Duration(milliseconds: 250),
+                      duration:
+                      const Duration(milliseconds: 250),
                       style: TextStyle(
-                        fontSize: _isBannerExpanded ? 24 : 20,
+                        fontSize:
+                        _isBannerExpanded ? 24 : 20,
                         fontWeight: FontWeight.w800,
                         color: palette.onCard,
                       ),
@@ -148,13 +167,13 @@ class _AlphabetScreenState extends State<AlphabetScreen> {
                         'Буква ${letter.letter} — за ${letter.word}',
                       ),
                     ),
-
                     const SizedBox(height: 6),
-
                     AnimatedDefaultTextStyle(
-                      duration: const Duration(milliseconds: 250),
+                      duration:
+                      const Duration(milliseconds: 250),
                       style: TextStyle(
-                        fontSize: _isBannerExpanded ? 18 : 15,
+                        fontSize:
+                        _isBannerExpanded ? 18 : 15,
                         color: palette.onCardSecondary,
                         height: 1.4,
                       ),
@@ -163,34 +182,36 @@ class _AlphabetScreenState extends State<AlphabetScreen> {
                   ],
                 ),
               ),
-
               Column(
                 children: [
                   AnimatedDefaultTextStyle(
-                    duration: const Duration(milliseconds: 250),
+                    duration:
+                    const Duration(milliseconds: 250),
                     style: TextStyle(
-                      fontSize: _isBannerExpanded ? 46 : 36,
+                      fontSize:
+                      _isBannerExpanded ? 46 : 36,
                     ),
                     child: Text(letter.emoji),
                   ),
-
                   const SizedBox(height: 8),
-
                 ],
               ),
             ],
           ),
-
           const SizedBox(height: 16),
-
           Row(
             children: [
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: _isMuted
                       ? null
-                      : () => _audio.playAsset(letter.audioPath),
-                  icon: const Icon(Icons.volume_up_rounded),
+                      : () =>
+                      _audio.playAsset(
+                        letter.audioPath,
+                      ),
+                  icon: const Icon(
+                    Icons.volume_up_rounded,
+                  ),
                   label: const Text(
                     'Слушни повторно',
                     style: TextStyle(
@@ -201,19 +222,23 @@ class _AlphabetScreenState extends State<AlphabetScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: palette.primary,
-                    disabledBackgroundColor: Colors.white70,
-                    disabledForegroundColor: Colors.grey,
+                    disabledBackgroundColor:
+                    Colors.white70,
+                    disabledForegroundColor:
+                    Colors.grey,
                     elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    padding:
+                    const EdgeInsets.symmetric(
+                      vertical: 13,
+                    ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius:
+                      BorderRadius.circular(16),
                     ),
                   ),
                 ),
               ),
-
               const SizedBox(width: 10),
-
               Container(
                 width: 46,
                 height: 46,
@@ -225,7 +250,8 @@ class _AlphabetScreenState extends State<AlphabetScreen> {
                   padding: EdgeInsets.zero,
                   onPressed: () {
                     setState(() {
-                      _isBannerExpanded = !_isBannerExpanded;
+                      _isBannerExpanded =
+                      !_isBannerExpanded;
                     });
                   },
                   icon: Icon(

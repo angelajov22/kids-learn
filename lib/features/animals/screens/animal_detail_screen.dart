@@ -122,18 +122,82 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
   @override
   Widget build(BuildContext context) {
     final palette = AccessibilityScope.of(context).palette;
+    final width = MediaQuery.sizeOf(context).width;
 
+    Widget _buildMobileContent() {
+      return Column(
+        children: [
+          _buildAnimalImage(),
+          _buildInfoCard(),
+          _buildFunFact(),
+
+          const SizedBox(height: 24),
+
+          if (_hasSoundFile) _buildSpeakButton(),
+
+          const SizedBox(height: 32),
+        ],
+      );
+    }
     return Scaffold(
       backgroundColor: palette.backgroundGradient.colors.first,
       body: SafeArea(
-        child: SingleChildScrollView(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.maxWidth;
+
+            final isPhone = width < 600;
+            final isTablet = width >= 600 && width < 1200;
+            final isDesktop = width >= 1200;
+
+            return SingleChildScrollView(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: 1100,
+                  ),
+                  child: Column(
+                    children: [
+                      _buildHeader(context),
+
+                      if (isPhone)
+                        _buildMobileContent()
+                      else if (isTablet)
+                        _buildTabletContent()
+                      else
+                        _buildDesktopContent(),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+  Widget _buildTabletContent() {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(
+          maxWidth: 720,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 40,
+            vertical: 28,
+          ),
           child: Column(
             children: [
-              _buildHeader(context),
               _buildAnimalImage(),
-              _buildInfoCard(),
-              _buildFunFact(),
+
               const SizedBox(height: 24),
+
+              _buildInfoCard(),
+
+              _buildFunFact(),
+
+              const SizedBox(height: 12),
 
               if (_hasSoundFile) _buildSpeakButton(),
 
@@ -144,7 +208,43 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
       ),
     );
   }
+  Widget _buildDesktopContent() {
+    return Padding(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: 5,
+                child: _buildAnimalImage(),
+              ),
 
+              const SizedBox(width: 28),
+
+              Expanded(
+                flex: 4,
+                child: Column(
+                  children: [
+                    _buildInfoCard(),
+                    _buildFunFact(),
+
+                    const SizedBox(height: 20),
+
+                    if (_hasSoundFile)
+                      _buildSpeakButton(),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
   Widget _buildHeader(BuildContext context) {
     final palette = AccessibilityScope.of(context).palette;
 
@@ -195,13 +295,23 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
   Widget _buildAnimalImage() {
     final palette = AccessibilityScope.of(context).palette;
 
+    final screenWidth = MediaQuery.sizeOf(context).width;
+
+    final imageHeight = screenWidth >= 600
+        ? 320.0
+        : 240.0;
+
+    final animalImageSize = screenWidth >= 600
+        ? 220.0
+        : 180.0;
+
     return Container(
-      margin: const EdgeInsets.all(24),
+      margin: EdgeInsets.zero,
       child: Column(
         children: [
           Container(
             width: double.infinity,
-            height: 240,
+            height: imageHeight,
             decoration: BoxDecoration(
               color: palette.tintedSurface(
                 palette.animalsGradient.colors.first,
@@ -224,12 +334,14 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
                 scale: _bounceAnim,
                 child: Image.asset(
                   widget.animal.imagePath,
-                  width: 180,
-                  height: 180,
+                  width: animalImageSize,
+                  height: animalImageSize,
                   fit: BoxFit.contain,
                   errorBuilder: (_, __, ___) => Text(
                     widget.animal.emoji,
-                    style: const TextStyle(fontSize: 140),
+                    style: TextStyle(
+                      fontSize: animalImageSize * 0.78,
+                    ),
                   ),
                 ),
               ),
@@ -240,7 +352,10 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
 
           ElevatedButton.icon(
             onPressed: () => _audio.playAsset(widget.animal.audioPath),
-            icon: const Icon(Icons.volume_up_rounded, size: 20),
+            icon: const Icon(
+              Icons.volume_up_rounded,
+              size: 20,
+            ),
             label: const Text(
               'Слушни повторно',
               style: TextStyle(
@@ -249,7 +364,8 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
               ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: palette.animalsGradient.colors.first,
+              backgroundColor:
+              palette.animalsGradient.colors.first,
               foregroundColor: Colors.white,
               elevation: 2,
               padding: const EdgeInsets.symmetric(
