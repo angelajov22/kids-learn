@@ -66508,11 +66508,25 @@ s.f=this.b
 s.r=!1},
 $S:0}
 A.a5A.prototype={
-$2(a,b){var s,r,q=b.b,p=q<600,o=p?20:70,n=p?10:18,m=p?20:70,l=p?20:28
-q=A.agn(q,5,p?120:150)
-s=p?16:18
-r=p?16:18
-return A.DM(new A.l3(q,r,s,p?0.7:0.82),new A.a5z(this.a),31,new A.a2(o,n,m,l),null,!1)},
+$2(a,b){var s,r,q,p,o,n,m,l=b.b,k=l<600,j=l>=600&&l<800,i=l>=800&&l<1200
+if(k)s=2
+else if(j)s=4
+else{r=i?4:5
+s=r}if(k)q=125
+else if(j)q=140
+else{r=i?150:165
+q=r}if(k)p=16
+else if(j)p=24
+else{r=i?32:60
+p=r}if(k)o=12
+else if(j)o=14
+else{r=i?16:18
+o=r}if(k)n=0.72
+else if(j)n=0.68
+else{r=i?0.76:0.84
+n=r}r=k?10:18
+m=k?20:28
+return A.DM(new A.l3(A.agn(l,s,q),o,o,n),new A.a5z(this.a),31,new A.a2(p,r,p,m),null,!1)},
 $S:84}
 A.a5z.prototype={
 $2(a,b){var s=B.iA[b]
