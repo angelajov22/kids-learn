@@ -91,14 +91,10 @@ class _ColorShapeCardState extends State<ColorShapeCard> {
               AppDimensions.cardPadding,
             ),
             decoration: BoxDecoration(
-              color: widget.selected
-                  ? palette.selectedBackground
-                  : light,
+              color: widget.selected ? palette.selectedBackground : light,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: widget.selected
-                    ? palette.selected
-                    : palette.border,
+                color: widget.selected ? palette.selected : palette.border,
                 width: widget.selected
                     ? palette.borderWidth + 1
                     : palette.borderWidth,
@@ -141,9 +137,7 @@ class _ColorShapeCardState extends State<ColorShapeCard> {
                       children: [
                         if (widget.item.type == ItemType.color)
                           AnimatedContainer(
-                            duration: const Duration(
-                              milliseconds: 180,
-                            ),
+                            duration: const Duration(milliseconds: 180),
                             width: widget.selected ? 82 : 74,
                             height: widget.selected ? 82 : 74,
                             decoration: BoxDecoration(
@@ -176,21 +170,16 @@ class _ColorShapeCardState extends State<ColorShapeCard> {
                               errorBuilder: (_, __, ___) => Text(
                                 widget.item.emoji,
                                 style: TextStyle(
-                                  fontSize:
-                                  widget.selected ? 54 : 50,
+                                  fontSize: widget.selected ? 54 : 50,
                                 ),
                               ),
                             ),
                           )
                         else
                           AnimatedDefaultTextStyle(
-                            duration: const Duration(
-                              milliseconds: 180,
-                            ),
+                            duration: const Duration(milliseconds: 180),
                             style: TextStyle(
-                              fontSize: widget.selected
-                                  ? 54
-                                  : 50,
+                              fontSize: widget.selected ? 54 : 50,
                             ),
                             child: Text(widget.item.emoji),
                           ),
@@ -201,8 +190,7 @@ class _ColorShapeCardState extends State<ColorShapeCard> {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize:
-                            AppDimensions.cardTitleFont,
+                            fontSize: AppDimensions.cardTitleFont - 3,
                             fontWeight: FontWeight.w800,
                             color: palette.textPrimary,
                           ),
@@ -217,9 +205,7 @@ class _ColorShapeCardState extends State<ColorShapeCard> {
                     right: 0,
                     child: AnimatedScale(
                       scale: widget.selected ? 1 : 0,
-                      duration: const Duration(
-                        milliseconds: 180,
-                      ),
+                      duration: const Duration(milliseconds: 180),
                       child: Container(
                         padding: const EdgeInsets.all(5),
                         decoration: BoxDecoration(
