@@ -183,7 +183,7 @@ class _ColorShapeCardState extends State<ColorShapeCard> {
                             ),
                             child: Text(widget.item.emoji),
                           ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: MediaQuery.of(context).size.width >= 900 ? 22 : 12),
                         Text(
                           widget.item.name,
                           textAlign: TextAlign.center,
