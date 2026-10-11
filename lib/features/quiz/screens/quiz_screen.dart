@@ -861,7 +861,7 @@ class _QuizScreenState extends State<QuizScreen>
         question: "Која форма е ова?",
         correctAnswer: "Квадрат",
         emoji: "🟦",
-        options: ["Квадрат", "Круг", "Петаголник", "Шестоаголник"]
+        options: ["Квадрат", "Круг", "Петтоаоголник", "Шестоаголник"]
           ..shuffle(_random),
         category: QuizCategory.colorsShapes,
         type: QuestionType.shapeObject,
@@ -887,8 +887,8 @@ class _QuizScreenState extends State<QuizScreen>
       QuestionModel(
         id: "shape_pentagon",
         question: "Која форма е ова?",
-        correctAnswer: "Петаголник",
-        options: ["Петаголник", "Шестоаголник", "Квадрат", "Круг"]
+        correctAnswer: "Петтоаголник",
+        options: ["Петтоаголник", "Шестоаголник", "Квадрат", "Круг"]
           ..shuffle(_random),
         category: QuizCategory.colorsShapes,
         type: QuestionType.shapeObject,
@@ -897,7 +897,7 @@ class _QuizScreenState extends State<QuizScreen>
         id: "shape_hexagon",
         question: "Која форма е ова?",
         correctAnswer: "Шестоаголник",
-        options: ["Шестоаголник", "Петаголник", "Триаголник", "Квадрат"]
+        options: ["Шестоаголник", "Петтоаголник", "Триаголник", "Квадрат"]
           ..shuffle(_random),
         category: QuizCategory.colorsShapes,
         type: QuestionType.shapeObject,

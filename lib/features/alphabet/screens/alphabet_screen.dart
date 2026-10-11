@@ -25,6 +25,12 @@ class _AlphabetScreenState extends State<AlphabetScreen> {
   bool _isBannerExpanded = false;
   bool _isMuted = false;
 
+  @override
+  void dispose() {
+    _audio.stop();
+    super.dispose();
+  }
+
   Future<void> _onTap(LetterModel letter) async {
     setState(() {
       _selected = letter;

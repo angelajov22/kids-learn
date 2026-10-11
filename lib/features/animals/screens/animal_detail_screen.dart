@@ -84,6 +84,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
     );
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
       try {
         await _audio.playAsset(widget.animal.audioPath);
       } catch (e) {
@@ -94,8 +95,20 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
 
   @override
   void dispose() {
+    _audio.stop();
     _bounceController.dispose();
     super.dispose();
+  }
+
+  Future<void> _stopAllSounds() async {
+    await _audio.stop();
+
+    _bounceController.stop();
+    _bounceController.reset();
+
+    if (mounted && _isSpeaking) {
+      setState(() => _isSpeaking = false);
+    }
   }
 
   Future<void> _speakAnimal() async {
@@ -122,9 +135,8 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
   @override
   Widget build(BuildContext context) {
     final palette = AccessibilityScope.of(context).palette;
-    final width = MediaQuery.sizeOf(context).width;
 
-    Widget _buildMobileContent() {
+    Widget buildMobileContent() {
       return Column(
         children: [
           _buildAnimalImage(),
@@ -139,6 +151,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
         ],
       );
     }
+
     return Scaffold(
       backgroundColor: palette.backgroundGradient.colors.first,
       body: SafeArea(
@@ -148,7 +161,6 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
 
             final isPhone = width < 600;
             final isTablet = width >= 600 && width < 1200;
-            final isDesktop = width >= 1200;
 
             return SingleChildScrollView(
               child: Center(
@@ -161,7 +173,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
                       _buildHeader(context),
 
                       if (isPhone)
-                        _buildMobileContent()
+                        buildMobileContent()
                       else if (isTablet)
                         _buildTabletContent()
                       else
@@ -176,6 +188,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
       ),
     );
   }
+
   Widget _buildTabletContent() {
     return Center(
       child: ConstrainedBox(
@@ -208,6 +221,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
       ),
     );
   }
+
   Widget _buildDesktopContent() {
     return Padding(
       padding: const EdgeInsets.all(32),
@@ -232,8 +246,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
 
                     const SizedBox(height: 20),
 
-                    if (_hasSoundFile)
-                      _buildSpeakButton(),
+                    if (_hasSoundFile) _buildSpeakButton(),
                   ],
                 ),
               ),
@@ -245,6 +258,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
       ),
     );
   }
+
   Widget _buildHeader(BuildContext context) {
     final palette = AccessibilityScope.of(context).palette;
 
@@ -260,7 +274,10 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => Navigator.pop(context),
+            onTap: () {
+              _stopAllSounds();
+              Navigator.pop(context);
+            },
             child: Container(
               width: 44,
               height: 44,
@@ -297,13 +314,9 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
 
     final screenWidth = MediaQuery.sizeOf(context).width;
 
-    final imageHeight = screenWidth >= 600
-        ? 320.0
-        : 240.0;
+    final imageHeight = screenWidth >= 600 ? 320.0 : 240.0;
 
-    final animalImageSize = screenWidth >= 600
-        ? 220.0
-        : 180.0;
+    final animalImageSize = screenWidth >= 600 ? 220.0 : 180.0;
 
     return Container(
       margin: EdgeInsets.zero,
@@ -364,8 +377,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
               ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor:
-              palette.animalsGradient.colors.first,
+              backgroundColor: palette.animalsGradient.colors.first,
               foregroundColor: Colors.white,
               elevation: 2,
               padding: const EdgeInsets.symmetric(
