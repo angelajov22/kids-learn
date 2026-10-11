@@ -313,6 +313,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
     final palette = AccessibilityScope.of(context).palette;
 
     final screenWidth = MediaQuery.sizeOf(context).width;
+    final isPhone = screenWidth < 600;
 
     final imageHeight = screenWidth >= 600 ? 320.0 : 240.0;
 
@@ -361,34 +362,43 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
             ),
           ),
 
-          const SizedBox(height: 14),
+          SizedBox(height: isPhone ? 18 : 14),
 
-          ElevatedButton.icon(
-            onPressed: () => _audio.playAsset(widget.animal.audioPath),
-            icon: const Icon(
-              Icons.volume_up_rounded,
-              size: 20,
-            ),
-            label: const Text(
-              'Слушни повторно',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: palette.animalsGradient.colors.first,
-              foregroundColor: Colors.white,
-              elevation: 2,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 10,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+          SizedBox(
+            width: isPhone ? double.infinity : null,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: isPhone ? 24 : 0),
+              child: ElevatedButton.icon(
+                onPressed: () => _audio.playAsset(widget.animal.audioPath),
+                icon: Icon(
+                  Icons.volume_up_rounded,
+                  size: isPhone ? 24 : 20,
+                ),
+                label: Text(
+                  'Слушни повторно',
+                  style: TextStyle(
+                    fontSize: isPhone ? 18 : 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: palette.animalsGradient.colors.first,
+                  foregroundColor: Colors.white,
+                  elevation: 2,
+                  minimumSize: Size(0, isPhone ? 56 : 44),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: isPhone ? 16 : 10,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(isPhone ? 18 : 14),
+                  ),
+                ),
               ),
             ),
           ),
+
+          SizedBox(height: isPhone ? 20 : 8),
         ],
       ),
     );
