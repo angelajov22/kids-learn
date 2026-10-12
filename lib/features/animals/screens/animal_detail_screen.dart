@@ -25,6 +25,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
   final _audio = AudioService();
 
   bool _isSpeaking = false;
+  bool _isMuted = false;
 
   late AnimationController _bounceController;
   late Animation<double> _bounceAnim;
@@ -84,11 +85,12 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
     );
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted) return;
+      if (!mounted || _isMuted) return;
+
       try {
         await _audio.playAsset(widget.animal.audioPath);
       } catch (e) {
-        debugPrint("AUDIO ERROR: $e");
+        debugPrint('AUDIO ERROR: $e');
       }
     });
   }
@@ -107,14 +109,40 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
     _bounceController.reset();
 
     if (mounted && _isSpeaking) {
-      setState(() => _isSpeaking = false);
+      setState(() {
+        _isSpeaking = false;
+      });
+    }
+  }
+
+  Future<void> _toggleMute() async {
+    final shouldMute = !_isMuted;
+
+    setState(() {
+      _isMuted = shouldMute;
+    });
+
+    if (shouldMute) {
+      await _stopAllSounds();
+    }
+  }
+
+  Future<void> _playAnimalName() async {
+    if (_isMuted) return;
+
+    try {
+      await _audio.playAsset(widget.animal.audioPath);
+    } catch (e) {
+      debugPrint('AUDIO ERROR: $e');
     }
   }
 
   Future<void> _speakAnimal() async {
-    if (_isSpeaking || !_hasSoundFile) return;
+    if (_isMuted || _isSpeaking || !_hasSoundFile) return;
 
-    setState(() => _isSpeaking = true);
+    setState(() {
+      _isSpeaking = true;
+    });
 
     _vibration.success();
     _bounceController.repeat(reverse: true);
@@ -122,11 +150,14 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
     try {
       await _audio.playAsset(_soundAudioPath);
     } catch (e) {
-      debugPrint("SOUND AUDIO ERROR: $e");
+      debugPrint('SOUND AUDIO ERROR: $e');
     }
 
     if (mounted) {
-      setState(() => _isSpeaking = false);
+      setState(() {
+        _isSpeaking = false;
+      });
+
       _bounceController.stop();
       _bounceController.reset();
     }
@@ -142,11 +173,8 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
           _buildAnimalImage(),
           _buildInfoCard(),
           _buildFunFact(),
-
           const SizedBox(height: 24),
-
           if (_hasSoundFile) _buildSpeakButton(),
-
           const SizedBox(height: 32),
         ],
       );
@@ -171,7 +199,6 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
                   child: Column(
                     children: [
                       _buildHeader(context),
-
                       if (isPhone)
                         buildMobileContent()
                       else if (isTablet)
@@ -203,17 +230,11 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
           child: Column(
             children: [
               _buildAnimalImage(),
-
               const SizedBox(height: 24),
-
               _buildInfoCard(),
-
               _buildFunFact(),
-
               const SizedBox(height: 12),
-
               if (_hasSoundFile) _buildSpeakButton(),
-
               const SizedBox(height: 32),
             ],
           ),
@@ -234,25 +255,20 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
                 flex: 5,
                 child: _buildAnimalImage(),
               ),
-
               const SizedBox(width: 28),
-
               Expanded(
                 flex: 4,
                 child: Column(
                   children: [
                     _buildInfoCard(),
                     _buildFunFact(),
-
                     const SizedBox(height: 20),
-
                     if (_hasSoundFile) _buildSpeakButton(),
                   ],
                 ),
               ),
             ],
           ),
-
           const SizedBox(height: 32),
         ],
       ),
@@ -263,7 +279,10 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
     final palette = AccessibilityScope.of(context).palette;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 12,
+      ),
       decoration: BoxDecoration(
         gradient: palette.animalsGradient,
         borderRadius: const BorderRadius.only(
@@ -316,8 +335,9 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
     final isPhone = screenWidth < 600;
 
     final imageHeight = screenWidth >= 600 ? 320.0 : 240.0;
-
     final animalImageSize = screenWidth >= 600 ? 220.0 : 180.0;
+
+    final primaryColor = palette.animalsGradient.colors.first;
 
     return Container(
       margin: EdgeInsets.zero,
@@ -327,9 +347,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
             width: double.infinity,
             height: imageHeight,
             decoration: BoxDecoration(
-              color: palette.tintedSurface(
-                palette.animalsGradient.colors.first,
-              ),
+              color: palette.tintedSurface(primaryColor),
               borderRadius: BorderRadius.circular(28),
               border: Border.all(
                 color: palette.border,
@@ -361,43 +379,90 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
               ),
             ),
           ),
-
           SizedBox(height: isPhone ? 18 : 14),
 
-          SizedBox(
-            width: isPhone ? double.infinity : null,
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: isPhone ? 24 : 0),
-              child: ElevatedButton.icon(
-                onPressed: () => _audio.playAsset(widget.animal.audioPath),
-                icon: Icon(
-                  Icons.volume_up_rounded,
-                  size: isPhone ? 24 : 20,
-                ),
-                label: Text(
-                  'Слушни повторно',
-                  style: TextStyle(
-                    fontSize: isPhone ? 18 : 15,
-                    fontWeight: FontWeight.w700,
+          Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: isPhone ? 24 : 0,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: _isMuted ? null : _playAnimalName,
+                    icon: Icon(
+                      Icons.volume_up_rounded,
+                      size: isPhone ? 24 : 20,
+                    ),
+                    label: Text(
+                      'Слушни повторно',
+                      style: TextStyle(
+                        fontSize: isPhone ? 18 : 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor:
+                      primaryColor.withOpacity(0.5),
+                      disabledForegroundColor: Colors.white70,
+                      elevation: 2,
+                      minimumSize: Size(
+                        0,
+                        isPhone ? 56 : 44,
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: isPhone ? 16 : 10,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          isPhone ? 18 : 14,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: palette.animalsGradient.colors.first,
-                  foregroundColor: Colors.white,
-                  elevation: 2,
-                  minimumSize: Size(0, isPhone ? 56 : 44),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: isPhone ? 16 : 10,
+                const SizedBox(width: 12),
+
+                // Mute / Unmute button
+                Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: primaryColor,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: palette.border,
+                      width: palette.borderWidth,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: palette.primary.withOpacity(0.18),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(isPhone ? 18 : 14),
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: _toggleMute,
+                    tooltip: _isMuted
+                        ? 'Вклучи звук'
+                        : 'Исклучи звук',
+                    icon: Icon(
+                      _isMuted
+                          ? Icons.notifications_off_rounded
+                          : Icons.notifications_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           ),
-
           SizedBox(height: isPhone ? 20 : 8),
         ],
       ),
@@ -428,16 +493,20 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
       child: Column(
         children: [
           if (widget.animal.sound.trim().isNotEmpty) ...[
-            _buildInfoRow('🔊', 'Звук', widget.animal.sound),
-
+            _buildInfoRow(
+              '🔊',
+              'Звук',
+              widget.animal.sound,
+            ),
             const SizedBox(height: 10),
-
             const Divider(height: 20),
           ],
-
-          _buildInfoRow('🏡', 'Живеалиште', widget.animal.habitat),
+          _buildInfoRow(
+            '🏡',
+            'Живеалиште',
+            widget.animal.habitat,
+          ),
           const Divider(height: 20),
-
           _buildInfoRow(
             '📂',
             'Категорија',
@@ -448,12 +517,19 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
     );
   }
 
-  Widget _buildInfoRow(String icon, String label, String value) {
+  Widget _buildInfoRow(
+      String icon,
+      String label,
+      String value,
+      ) {
     final palette = AccessibilityScope.of(context).palette;
 
     return Row(
       children: [
-        Text(icon, style: const TextStyle(fontSize: 22)),
+        Text(
+          icon,
+          style: const TextStyle(fontSize: 22),
+        ),
         const SizedBox(width: 12),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -484,7 +560,10 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
     final palette = AccessibilityScope.of(context).palette;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      margin: const EdgeInsets.symmetric(
+        horizontal: 24,
+        vertical: 16,
+      ),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: palette.animalsGradient,
@@ -496,7 +575,10 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
       ),
       child: Row(
         children: [
-          const Text('💡', style: TextStyle(fontSize: 28)),
+          const Text(
+            '💡',
+            style: TextStyle(fontSize: 28),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -533,9 +615,19 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: CustomButton(
-        text: _isSpeaking ? 'Слушај...' : 'Слушни ${widget.animal.name}',
-        emoji: _isSpeaking ? '🔊' : '▶️',
-        onTap: _isSpeaking ? () {} : _speakAnimal,
+        text: _isMuted
+            ? 'Звукот е исклучен'
+            : _isSpeaking
+            ? 'Слушај...'
+            : 'Слушни ${widget.animal.name}',
+        emoji: _isMuted
+            ? '🔕'
+            : _isSpeaking
+            ? '🔊'
+            : '▶️',
+        onTap: (_isSpeaking || _isMuted)
+            ? () {}
+            : _speakAnimal,
         backgroundColor: palette.animalsGradient.colors.first,
         width: double.infinity,
         height: 60,

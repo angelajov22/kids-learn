@@ -223,17 +223,12 @@ class _AlphabetScreenState extends State<AlphabetScreen> {
                   ],
                 ),
               ),
-              Column(
-                children: [
-                  AnimatedDefaultTextStyle(
-                    duration: const Duration(milliseconds: 250),
-                    style: TextStyle(
-                      fontSize: _isBannerExpanded ? 46 : 36,
-                    ),
-                    child: Text(letter.emoji),
-                  ),
-                  const SizedBox(height: 8),
-                ],
+              AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 250),
+                style: TextStyle(
+                  fontSize: _isBannerExpanded ? 46 : 36,
+                ),
+                child: Text(letter.emoji),
               ),
             ],
           ),
@@ -244,12 +239,8 @@ class _AlphabetScreenState extends State<AlphabetScreen> {
                 child: ElevatedButton.icon(
                   onPressed: _isMuted
                       ? null
-                      : () => _audio.playAsset(
-                    letter.audioPath,
-                  ),
-                  icon: const Icon(
-                    Icons.volume_up_rounded,
-                  ),
+                      : () => _audio.playAsset(letter.audioPath),
+                  icon: const Icon(Icons.volume_up_rounded),
                   label: const Text(
                     'Слушни повторно',
                     style: TextStyle(
@@ -273,6 +264,32 @@ class _AlphabetScreenState extends State<AlphabetScreen> {
                 ),
               ),
               const SizedBox(width: 10),
+
+              // Mute / Unmute button - same style as zoom button
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.18),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: _toggleMute,
+                  tooltip: _isMuted ? 'Вклучи звук' : 'Исклучи звук',
+                  icon: Icon(
+                    _isMuted
+                        ? Icons.notifications_off_outlined
+                        : Icons.notifications_none_rounded,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 10),
+
+              // Expand / Collapse button
               Container(
                 width: 46,
                 height: 46,
