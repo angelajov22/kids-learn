@@ -154,9 +154,6 @@ class _AnimalsScreenState extends State<AnimalsScreen> {
       builder: (context, constraints) {
         final width = constraints.maxWidth;
 
-        // Mobile: 2 cards
-        // Tablet: 3 cards
-        // Desktop: 4 cards
         final int columns;
 
         if (width < 600) {

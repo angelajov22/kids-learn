@@ -426,7 +426,6 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen>
                 ),
                 const SizedBox(width: 12),
 
-                // Mute / Unmute button
                 Container(
                   width: 46,
                   height: 46,

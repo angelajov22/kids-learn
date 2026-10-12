@@ -15,7 +15,7 @@ class AudioService {
     try {
       await stop();
 
-      debugPrint("PLAYING >>> $assetPath"); // <-- додај ја оваа линија
+      debugPrint("PLAYING >>> $assetPath");
 
       _isPlaying = true;
       await _player.play(AssetSource(assetPath));

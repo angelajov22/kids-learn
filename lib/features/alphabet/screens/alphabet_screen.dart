@@ -265,7 +265,6 @@ class _AlphabetScreenState extends State<AlphabetScreen> {
               ),
               const SizedBox(width: 10),
 
-              // Mute / Unmute button - same style as zoom button
               Container(
                 width: 46,
                 height: 46,
@@ -289,7 +288,6 @@ class _AlphabetScreenState extends State<AlphabetScreen> {
 
               const SizedBox(width: 10),
 
-              // Expand / Collapse button
               Container(
                 width: 46,
                 height: 46,

@@ -30,7 +30,6 @@ class PageScaffold extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // Header
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
@@ -94,8 +93,6 @@ class PageScaffold extends StatelessWidget {
                 ],
               ),
             ),
-
-            // Content
             Expanded(child: child),
           ],
         ),
